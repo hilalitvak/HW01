@@ -11,6 +11,7 @@ public class Board {
      */
     public Board(String string_board){
         if(string_board==null){
+            this.tiles=null;
             return;
         }
         String[] rows= string_board.split("\\|");//divide by diff rows

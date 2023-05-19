@@ -6,7 +6,14 @@ public class State {
     private Board board;
 
     public State(Board b) {
-       board = b ;
+        board = new Board(null);
+        board.setTiles(b.getTiles());
+        board.setRow(b.getRow());
+        board.setCol(b.getCol());
+    }
+
+    public Board getBoard() {
+        return board;
     }
 
     /** check if the current state is the target state
@@ -14,11 +21,13 @@ public class State {
      */
     public boolean isGoal () {
         Tile[][] tiles = board.getTiles();
-        if (tiles[board.getRow() - 1][board.getCol() - 1].getValue() == ~0)
+        int row_size= board.getRow();
+        int col_size= board.getCol();
+        if (tiles[board.getRow() - 1][board.getCol() - 1].getValue() != 0)//if the last tile is not empty
             return false;
-        for (int i = 0; i < board.getRow(); i++) {
-            for (int j = 0; j < (board.getCol()-1); j++){
-                if (tiles[i][j + 1].getValue() - tiles[i][j].getValue() == ~1)
+        for (int i = 0; i < row_size; i++) {//check if the tiles are in the right order
+            for (int j = 0; j < (col_size-1); j++){
+                if (!(tiles[i][j].getValue() == i * row_size + j + 1))
                     return false;
             }
         }
@@ -31,13 +40,15 @@ public class State {
      */
     public Action[] actions () {
         Tile[][] tiles = board.getTiles();
+        int col_size= board.getCol();
+        int row_size= board.getRow();
         int empty = 0;//empty tile
         int[] indexes = board.findindex(empty);
         int row_empty = indexes[0];
         int col_empty = indexes[1];
         List<Action> actionList = new ArrayList<>();
-        if (tiles.length - 1 > row_empty) { //if up is possible
-            actionList.add(new Action(tiles[row_empty + 1][col_empty], Direction.UP));
+        if (row_empty < row_size - 1) { //if up is possible
+            actionList.add(new Action(tiles[row_empty + 1][col_empty], Direction.UP));//add the action to the list
         }
         if (0 < row_empty) { //if down is possible
             actionList.add(new Action(tiles[row_empty - 1][col_empty], Direction.DOWN));
@@ -45,48 +56,54 @@ public class State {
         if (0 < col_empty) { //if right is possible
             actionList.add(new Action(tiles[row_empty][col_empty - 1], Direction.RIGHT));
         }
-        if (tiles.length - 1 > col_empty) { //if left is possible
-            actionList.add(new Action(tiles[row_empty][col_empty + 1], Direction.LEFT));
+        if (col_empty < col_size - 1) { //if left is possible
+            actionList.add(new Action(tiles[row_empty][col_empty + 1], Direction.LEFT));//add the action to the list
         }
-        Action[] actions =  actionList.toArray(new Action[actionList.size()]);
+        Action[] actions =  actionList.toArray(new Action[actionList.size()]); //convert the list to array
         return actions;
     }
+
+
     /** the func gets an action, and changes accordingly
      * @param action - new action
      * @return the new state that received from doing the action
      */
     public State result(Action action) {
-        Tile[][] tiles = board.getTiles();
-        Direction direction = action.getDirection();
-        Tile tile = action.getTile();
-        int[] indexes = board.findindex(tile.getValue());
-        int row_tile = indexes[0];
-        int col_tile = indexes[1];
-        Tile[][] new_state = Arrays.copyOf(tiles, tiles.length);
+        Tile[][] tiles = board.getTiles();//the current state
+
+        Direction direction = action.getDirection();//the direction of the action
+        Tile tile = action.getTile();//the tile that we want to move
+        int[] indexes = board.findindex(tile.getValue());//the indexes of the tile
+        int row_tile = indexes[0];//the row of the tile
+        int col_tile = indexes[1];//the col of the tile
+
+        Tile[][] new_state = new Tile[tiles.length][];//the new state before the change
+        for (int i = 0; i < tiles.length; i++) {//copy the current state to the new state
+            new_state[i] = Arrays.copyOf(tiles[i], tiles[i].length);//copy the current state to the new state
+        }
         // LET'S MAKE A MOVE
-        if (direction == Direction.UP) {
-            new_state[row_tile + 1][col_tile] = tile;
+        if (direction.equals(Direction.UP)) {//if the direction is up
+            new_state[row_tile - 1][col_tile] = new Tile(tile.getValue());//move the tile up
+            new_state[row_tile][col_tile] = new Tile(0);//put 0 in the place of the tile
+        }
+        if (direction.equals(Direction.DOWN)){ //if the direction is down
+            new_state[row_tile + 1][col_tile] = new Tile(tile.getValue());;
             new_state[row_tile][col_tile] = new Tile(0);
         }
-        if (direction == Direction.DOWN) {
-            new_state[row_tile - 1][col_tile] = tile;
+        if (direction.equals(Direction.RIGHT)) { //if the direction is right
+            new_state[row_tile][col_tile + 1] = new Tile(tile.getValue());;
             new_state[row_tile][col_tile] = new Tile(0);
         }
-        if (direction == Direction.RIGHT) {
-            new_state[row_tile][col_tile + 1] = tile;
-            new_state[row_tile][col_tile] = new Tile(0);
-        }
-        if (direction == Direction.LEFT) {
-            new_state[row_tile][col_tile - 1] = tile;
+        if (direction.equals(Direction.LEFT)) {//if the direction is left
+            new_state[row_tile][col_tile - 1] = new Tile(tile.getValue());;
             new_state[row_tile][col_tile] = new Tile(0);
         }
         Board new_board = new Board(null);//create new board
         new_board.setCol(board.getCol());//set the number of col
         new_board.setRow(board.getRow());//set the number of row
         new_board.setTiles(new_state);//set the new tiles as we created
-        State returned_state = new State(new_board);//set the new state
-        return returned_state;//return the new state
-    }
+        return new State(new_board);//return the new state
+    }//end of result
 
 
     @Override

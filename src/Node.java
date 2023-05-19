@@ -8,10 +8,11 @@ public class Node {
      * @param lastAction the last action accrued
      */
     public Node(Node fatherS, Action lastAction, State newState){
-        action = lastAction;
-        state = newState;
-        if(fatherS != null)
-            parent = fatherS;
+        state = new State(newState.getBoard());
+        if (fatherS != null)
+            parent = new Node(fatherS.getParent(), fatherS.getAction(), fatherS.getState());
+        if(lastAction != null)
+            action = new Action(lastAction.getTile(), lastAction.getDirection());
     }
 
     public Action getAction() {
@@ -43,9 +44,21 @@ public class Node {
 
     /** the func checks the value of the heu the current state of the node
      *
-     * @return
+     * @return num of tiles that are not in place
      */
     public int heuristicValue(){
-        return 0;
+       /**int num_not_in_place = 0;
+        Tile[][] tiles = state.getBoard().getTiles();
+        int row_size= state.getBoard().getRow();
+        int col_size= state.getBoard().getCol();
+        for(int i=0; i < row_size; i++){
+            for(int j=0; j < col_size-1; j++){
+                if(tiles[i][j].getValue() != i * row_size + j + 1)//if the tile is not in place
+                    num_not_in_place++;//add 1 to the counter
+            }
+        }//for
+        return num_not_in_place;**/
+       return 0;
     }
+
 }

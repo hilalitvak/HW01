@@ -3,7 +3,7 @@ public class Action {
     private Direction direction;
     /// should we check if the move i valid???
     Action(Tile t1, Direction d1){
-        tile=t1;
+        tile= new Tile(t1.getValue());
         direction = d1;
     }
     public Tile getTile(){
@@ -23,6 +23,6 @@ public class Action {
      * @return a string contains tile and direction
      */
     public String toString(){
-        return "Move <"+tile+"> <"+direction+">";
+        return "Move <"+tile.getValue()+"> <"+direction.toString()+">";
     }
 }
